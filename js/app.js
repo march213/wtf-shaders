@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import fragment from './shader/fragment.glsl'
 import vertex from './shader/vertex.glsl'
 
-import ocean from '../images/ocean.jpg'
+import ocean from '../img/ocean.jpg'
 
 export default class Sketch {
   constructor(options) {
@@ -17,7 +17,7 @@ export default class Sketch {
     this.camera = new THREE.PerspectiveCamera(70, this.width / this.height, 0.01, 10)
     this.camera.position.z = 1
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true })
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     this.renderer.setSize(this.width, this.height)
     this.container.appendChild(this.renderer.domElement)
 
