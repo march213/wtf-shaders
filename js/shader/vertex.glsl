@@ -81,18 +81,8 @@ varying vec2 vUv;
 void main() {
   vec3 new_Position = position;
   float PI = 3.1415925;
-
-  // float noise = cnoise(vec3(position.x * 4., position.y * 4. + time/5., 0.));
-  // spehre distortion
-  float noise = cnoise(3.*vec3(position.x, position.y, position.z + time/30.));
-  // float dist = distance(uv, vec2(0.5));
-
-  // new_Position.z += 0.05*sin(dist*40. - time);
-
-  new_Position += 0.1*normal*noise;
-  
+  float noise = cnoise(3.*vec3(position.x, position.y, position.z + time/30.));  
   vNoise = noise;
   vUv = uv;
-  
   gl_Position = projectionMatrix * modelViewMatrix * vec4( new_Position, 1.0 );
 }
