@@ -30,6 +30,11 @@ export default class Sketch {
 
     this.images = [...document.querySelectorAll('img')]
 
+    this.currentScroll = 0
+
+    this.raycaster = new THREE.Raycaster()
+    this.mouse = new THREE.Vector2()
+
     const fontOpen = new Promise((resolve) => {
       new FontFaceObserver('Open Sans').load().then(() => {
         resolve()
@@ -46,20 +51,39 @@ export default class Sketch {
       imagesLoaded(document.querySelectorAll('img'), { background: true }, resolve)
     })
 
-    this.currentScroll = 0
-
     Promise.all([fontOpen, fontPlayfair, preloadImages]).then(() => {
       this.scroll = new Scroll()
       this.addImages()
       this.setPosition()
+
+      this.mouseMovement()
       this.setupResize()
-      // this.addObjects()
       this.render()
 
       window.addEventListener('scroll', () => {
         this.currentScroll = window.scrollY
       })
     })
+  }
+
+  mouseMovement() {
+    window.addEventListener(
+      'mousemove',
+      (event) => {
+        this.mouse.x = (event.clientX / this.width) * 2 - 1
+        this.mouse.y = (event.clientY / this.height) * 2 - 1
+
+        // update the picking ray with the camera and mouse position
+        this.raycaster.setFromCamera(this.mouse, this.camera)
+        // calculate objects intersecting the picking ray
+        const intersects = this.raycaster.intersectObjects(this.scene.children)
+
+        if (intersects.length) {
+          console.log(intersects[0])
+        }
+      },
+      false,
+    )
   }
 
   setupResize() {
@@ -75,12 +99,30 @@ export default class Sketch {
   }
 
   addImages() {
+    this.material = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        uImage: { value: 0 },
+        hover: { value: new THREE.Vector2(0.5, 0.5) },
+      },
+      side: THREE.DoubleSide,
+      fragmentShader: fragment,
+      vertexShader: vertex,
+      // wireframe: true,
+    })
+
+    this.materials = []
+
     this.imageStore = this.images.map((img) => {
       let bounds = img.getBoundingClientRect()
-      let geomentry = new THREE.PlaneBufferGeometry(bounds.width, bounds.height, 1, 1)
+      let geomentry = new THREE.PlaneBufferGeometry(bounds.width, bounds.height, 10, 10)
       let texture = new THREE.Texture(img)
       texture.needsUpdate = true
-      let material = new THREE.MeshBasicMaterial({ map: texture })
+
+      let material = this.material.clone()
+      this.materials.push(material)
+      material.uniforms.uImage.value = texture
+
       let mesh = new THREE.Mesh(geomentry, material)
 
       this.scene.add(mesh)
@@ -103,32 +145,16 @@ export default class Sketch {
     })
   }
 
-  addObjects() {
-    this.geometry = new THREE.PlaneBufferGeometry(100, 100, 10, 10)
-    this.material = new THREE.ShaderMaterial({
-      uniforms: {
-        time: {
-          value: 0,
-        },
-        oceanTexture: {
-          value: new THREE.TextureLoader().load(ocean),
-        },
-      },
-      side: THREE.DoubleSide,
-      fragmentShader: fragment,
-      vertexShader: vertex,
-      wireframe: true,
-    })
-
-    this.mesh = new THREE.Mesh(this.geometry, this.material)
-    this.scene.add(this.mesh)
-  }
-
   render() {
     this.time += 0.05
     this.scroll.render()
     this.currentScroll = this.scroll.scrollToRender
     this.setPosition()
+
+    this.materials.forEach((m) => {
+      m.uniforms.time.value = this.time
+    })
+
     this.renderer.render(this.scene, this.camera)
     window.requestAnimationFrame(this.render.bind(this))
   }
