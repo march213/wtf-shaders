@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import FontFaceObserver from 'fontfaceobserver'
 import imagesLoaded from 'imagesloaded'
+import Scroll from './scroll'
 import fragment from './shader/fragment.glsl'
 import vertex from './shader/vertex.glsl'
 
@@ -45,12 +46,19 @@ export default class Sketch {
       imagesLoaded(document.querySelectorAll('img'), { background: true }, resolve)
     })
 
+    this.currentScroll = 0
+
     Promise.all([fontOpen, fontPlayfair, preloadImages]).then(() => {
+      this.scroll = new Scroll()
       this.addImages()
       this.setPosition()
       this.setupResize()
-      this.addObjects()
+      // this.addObjects()
       this.render()
+
+      window.addEventListener('scroll', () => {
+        this.currentScroll = window.scrollY
+      })
     })
   }
 
@@ -72,7 +80,7 @@ export default class Sketch {
       let geomentry = new THREE.PlaneBufferGeometry(bounds.width, bounds.height, 1, 1)
       let texture = new THREE.Texture(img)
       texture.needsUpdate = true
-      let material = new THREE.MeshBasicMaterial({ color: 0xff0000, map: texture })
+      let material = new THREE.MeshBasicMaterial({ map: texture })
       let mesh = new THREE.Mesh(geomentry, material)
 
       this.scene.add(mesh)
@@ -91,7 +99,7 @@ export default class Sketch {
   setPosition() {
     this.imageStore.forEach((o) => {
       o.mesh.position.x = o.left - this.width / 2 + o.width / 2
-      o.mesh.position.y = -o.top + this.height / 2 - o.height / 2
+      o.mesh.position.y = this.currentScroll + -o.top + this.height / 2 - o.height / 2
     })
   }
 
@@ -118,13 +126,10 @@ export default class Sketch {
 
   render() {
     this.time += 0.05
-    this.mesh.rotation.x = this.time / 2000
-    this.mesh.rotation.y = this.time / 1000
-
-    this.material.uniforms.time.value = this.time
-
+    this.scroll.render()
+    this.currentScroll = this.scroll.scrollToRender
+    this.setPosition()
     this.renderer.render(this.scene, this.camera)
-
     window.requestAnimationFrame(this.render.bind(this))
   }
 }
