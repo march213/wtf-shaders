@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import FontFaceObserver from 'fontfaceobserver'
+import imagesLoaded from 'imagesloaded'
 import fragment from './shader/fragment.glsl'
 import vertex from './shader/vertex.glsl'
 
@@ -17,7 +19,7 @@ export default class Sketch {
     this.camera = new THREE.PerspectiveCamera(70, this.width / this.height, 100, 2000)
     // not 600
     this.camera.position.z = 660
-    this.camera.fov = 2 * Math.atan((this.height / 2) / 660) * (180 / Math.PI)
+    this.camera.fov = 2 * Math.atan(this.height / 2 / 660) * (180 / Math.PI)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     this.renderer.setSize(this.width, this.height)
@@ -27,11 +29,29 @@ export default class Sketch {
 
     this.images = [...document.querySelectorAll('img')]
 
-    this.addImages()
-    this.setPosition()
-    this.setupResize()
-    this.addObjects()
-    this.render()
+    const fontOpen = new Promise((resolve) => {
+      new FontFaceObserver('Open Sans').load().then(() => {
+        resolve()
+      })
+    })
+
+    const fontPlayfair = new Promise((resolve) => {
+      new FontFaceObserver('Playfair Display').load().then(() => {
+        resolve()
+      })
+    })
+
+    const preloadImages = new Promise((resolve) => {
+      imagesLoaded(document.querySelectorAll('img'), { background: true }, resolve)
+    })
+
+    Promise.all([fontOpen, fontPlayfair, preloadImages]).then(() => {
+      this.addImages()
+      this.setPosition()
+      this.setupResize()
+      this.addObjects()
+      this.render()
+    })
   }
 
   setupResize() {
@@ -45,16 +65,16 @@ export default class Sketch {
     this.camera.aspect = this.width / this.height
     this.camera.updateProjectionMatrix()
   }
-  
+
   addImages() {
-    this.imageStore = this.images.map(img => {
+    this.imageStore = this.images.map((img) => {
       let bounds = img.getBoundingClientRect()
       let geomentry = new THREE.PlaneBufferGeometry(bounds.width, bounds.height, 1, 1)
       let material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
       let mesh = new THREE.Mesh(geomentry, material)
-      
+
       this.scene.add(mesh)
-      
+
       return {
         img,
         mesh,
@@ -67,9 +87,9 @@ export default class Sketch {
   }
 
   setPosition() {
-    this.imageStore.forEach(o => {
-      o.mesh.position.x = o.left - (this.width / 2) + (o.width / 2)
-      o.mesh.position.y = -o.top + (this.height / 2) - (o.height / 2)
+    this.imageStore.forEach((o) => {
+      o.mesh.position.x = o.left - this.width / 2 + o.width / 2
+      o.mesh.position.y = -o.top + this.height / 2 - o.height / 2
     })
   }
 
