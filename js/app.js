@@ -70,7 +70,9 @@ export default class Sketch {
     this.imageStore = this.images.map((img) => {
       let bounds = img.getBoundingClientRect()
       let geomentry = new THREE.PlaneBufferGeometry(bounds.width, bounds.height, 1, 1)
-      let material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
+      let texture = new THREE.Texture(img)
+      texture.needsUpdate = true
+      let material = new THREE.MeshBasicMaterial({ color: 0xff0000, map: texture })
       let mesh = new THREE.Mesh(geomentry, material)
 
       this.scene.add(mesh)
