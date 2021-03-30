@@ -15,8 +15,9 @@ export default class Sketch {
     this.height = this.container.offsetHeight
 
     this.camera = new THREE.PerspectiveCamera(70, this.width / this.height, 100, 2000)
-    this.camera.position.z = 600
-    this.camera.fov = 2 * Math.atan((this.height / 2) / 600) * (180 / Math.PI)
+    // not 600
+    this.camera.position.z = 660
+    this.camera.fov = 2 * Math.atan((this.height / 2) / 660) * (180 / Math.PI)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     this.renderer.setSize(this.width, this.height)
@@ -27,6 +28,7 @@ export default class Sketch {
     this.images = [...document.querySelectorAll('img')]
 
     this.addImages()
+    this.setPosition()
     this.setupResize()
     this.addObjects()
     this.render()
@@ -43,14 +45,16 @@ export default class Sketch {
     this.camera.aspect = this.width / this.height
     this.camera.updateProjectionMatrix()
   }
-
+  
   addImages() {
     this.imageStore = this.images.map(img => {
       let bounds = img.getBoundingClientRect()
       let geomentry = new THREE.PlaneBufferGeometry(bounds.width, bounds.height, 1, 1)
       let material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
       let mesh = new THREE.Mesh(geomentry, material)
+      
       this.scene.add(mesh)
+      
       return {
         img,
         mesh,
@@ -59,6 +63,13 @@ export default class Sketch {
         width: bounds.width,
         height: bounds.height,
       }
+    })
+  }
+
+  setPosition() {
+    this.imageStore.forEach(o => {
+      o.mesh.position.x = o.left - (this.width / 2) + (o.width / 2)
+      o.mesh.position.y = -o.top + (this.height / 2) - (o.height / 2)
     })
   }
 
