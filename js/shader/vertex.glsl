@@ -76,6 +76,7 @@ float cnoise(vec3 P){
 
 uniform float time;
 uniform vec2 hover;
+uniform float hoverState;
 varying float vNoise;
 varying vec2 vUv;
 
@@ -84,7 +85,7 @@ void main() {
   float PI = 3.1415925;
   float dist = distance(uv, hover);
 
-  new_Position.z += 10. * sin(dist * 10. + time);
+  new_Position.z += hoverState * 10. * sin(dist * 10. + time);
   
   vNoise = dist;
   vUv = uv;

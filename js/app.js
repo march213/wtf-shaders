@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import FontFaceObserver from 'fontfaceobserver'
 import imagesLoaded from 'imagesloaded'
+import gsap from 'gsap'
 import Scroll from './scroll'
 import fragment from './shader/fragment.glsl'
 import vertex from './shader/vertex.glsl'
@@ -79,7 +80,8 @@ export default class Sketch {
         const intersects = this.raycaster.intersectObjects(this.scene.children)
 
         if (intersects.length) {
-          console.log(intersects[0])
+          let obj = intersects[0].object
+          obj.material.uniforms.hover.value = intersects[0].uv
         }
       },
       false,
@@ -103,6 +105,7 @@ export default class Sketch {
       uniforms: {
         time: { value: 0 },
         uImage: { value: 0 },
+        hoverState: { value: 0 },
         hover: { value: new THREE.Vector2(0.5, 0.5) },
       },
       side: THREE.DoubleSide,
@@ -120,6 +123,20 @@ export default class Sketch {
       texture.needsUpdate = true
 
       let material = this.material.clone()
+
+      img.addEventListener('mouseenter', () => {
+        gsap.to(material.uniforms.hoverState, {
+          duration: 1,
+          value: 1,
+        })
+      })
+      img.addEventListener('mouseout', () => {
+        gsap.to(material.uniforms.hoverState, {
+          duration: 1,
+          value: 0,
+        })
+      })
+
       this.materials.push(material)
       material.uniforms.uImage.value = texture
 
