@@ -24,6 +24,9 @@ export default class Sketch {
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
 
+    this.images = [...document.querySelectorAll('img')]
+
+    this.addImages()
     this.setupResize()
     this.addObjects()
     this.render()
@@ -39,6 +42,24 @@ export default class Sketch {
     this.renderer.setSize(this.width, this.height)
     this.camera.aspect = this.width / this.height
     this.camera.updateProjectionMatrix()
+  }
+
+  addImages() {
+    this.imageStore = this.images.map(img => {
+      let bounds = img.getBoundingClientRect()
+      let geomentry = new THREE.PlaneBufferGeometry(bounds.width, bounds.height, 1, 1)
+      let material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
+      let mesh = new THREE.Mesh(geomentry, material)
+      this.scene.add(mesh)
+      return {
+        img,
+        mesh,
+        top: bounds.top,
+        left: bounds.left,
+        width: bounds.width,
+        height: bounds.height,
+      }
+    })
   }
 
   addObjects() {

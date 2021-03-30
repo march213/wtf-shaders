@@ -8,7 +8,6 @@ body {
 .page {
   width: min(90%, 1200px);
   margin: 0 auto;
-  /* border: 1px solid #000; */
 }
 /* header */
 
@@ -47,22 +46,22 @@ h2 {
 }
 
 .item {
-  /* border: 1px solid #000; */
   align-self: center;
   justify-self: center;
   text-decoration: none;
   color: #333;
 }
+
 .item:nth-child(odd) {
   justify-self: start;
 }
+
 .item:nth-child(even) {
   justify-self: end;
 }
 .item img {
   width: 100%;
   display: block;
-  /* opacity: 0; */
 }
 .item__image {
   position: relative;
